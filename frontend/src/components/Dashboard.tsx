@@ -3,6 +3,7 @@ import { BarChart3, TrendingUp, Heart, Brain, Settings, Calendar, User } from "l
 import { Button } from "./ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
+import { supabase } from "../lib/supabaseClient";
 import {
   Sidebar,
   SidebarContent,
