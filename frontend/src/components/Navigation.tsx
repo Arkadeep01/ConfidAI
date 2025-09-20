@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Menu, X, Brain, User, Globe, Bell } from "lucide-react";
 import { Button } from "./ui/button";
+import { supabase } from "../lib/supabaseClient";
 import {
   DropdownMenu,
   DropdownMenuContent,

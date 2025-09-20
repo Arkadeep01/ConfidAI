@@ -1,4 +1,5 @@
 import { Button } from "./ui/button";
+import { supabase } from "../lib/supabaseClient";
 import { Heart, Shield, Mic, BarChart3, Sparkles } from "lucide-react";
 
 interface HeroProps {

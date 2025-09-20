@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Textarea } from "./ui/textarea";
 import { Progress } from "./ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { supabase } from "../lib/supabaseClient";
 
 export const WellnessTools = () => {
   const [breathingActive, setBreathingActive] = useState(false);
