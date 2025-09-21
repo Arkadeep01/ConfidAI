@@ -22,6 +22,7 @@ interface Message {
 interface FloatingChatbotProps {
   user?: { id: string }; // expects user object with id
   isShieldMode?: boolean;
+  onRequireAuth?: () => void;
 }
 
 export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) => {
@@ -29,18 +30,7 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
   const [isMinimized, setIsMinimized] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: !user
-        ? 'Please sign in to access the AI chatbot and see personalized responses.'
-        : isShieldMode
-          ? 'Hello! I\'m your productivity assistant. How can I help you today?'
-          : 'Hi there! I\'m your wellness companion. How are you feeling today?',
-      sender: 'bot',
-      timestamp: new Date(),
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,6 +39,27 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Update initial bot message when user logs in or shield mode changes
+  useEffect(() => {
+    if (user) {
+      setMessages([{
+        id: Date.now().toString(),
+        text: isShieldMode
+          ? "Hello! I'm your productivity assistant. How can I help you today?"
+          : "Hi there! I'm your wellness companion. How are you feeling today?",
+        sender: 'bot',
+        timestamp: new Date(),
+      }]);
+    } else {
+      setMessages([{
+        id: Date.now().toString(),
+        text: "Please sign in to access the chat and see personalized responses.",
+        sender: 'bot',
+        timestamp: new Date(),
+      }]);
+    }
+  }, [user, isShieldMode]);
 
   useEffect(() => {
     scrollToBottom();
@@ -106,7 +117,6 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
     setIsListening(!isListening);
 
     if (!isListening) {
-      // Simulated voice-to-text
       setTimeout(() => {
         setIsListening(false);
         setMessage('This would be voice input text...');
@@ -121,7 +131,7 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
     }
   };
 
-  // Chatbot button
+  // Chatbot open button
   if (!isOpen) {
     return (
       <button
@@ -141,8 +151,8 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
           <div className="w-8 h-8 primary-gradient rounded-full flex items-center justify-center">
             <Bot className="w-4 h-4 text-white" />
           </div>
-          <span className="font-semibold">{isShieldMode ? 'Assistant' : 'Wellness Companion'}</span>
-          {!user && <span className="text-xs text-muted-foreground">(Guest)</span>}
+          <span className="font-semibold">ClearPath</span>
+          {!user && <span className="text-xs text-muted-foreground">(Guest Mode)</span>}
         </div>
         <div className="flex items-center space-x-1">
           <button className="p-1 hover:bg-accent rounded-md transition-colors" onClick={() => setIsMinimized(!isMinimized)}>
@@ -182,38 +192,37 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
             </div>
           </div>
 
-          {/* Input */}
+          {/* Input (only shows for logged-in users) */}
           <div className="p-4 border-t bg-background/50">
-            <div className="flex items-end space-x-2">
-              <div className="flex-1">
-                <input
-                  ref={inputRef}
-                  value={message}
-                  onChange={e => setMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={user ? "Type your message..." : "Sign in to chat..."}
-                  className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary transition-colors resize-none"
-                  disabled={!user}
-                />
+            {user ? (
+              <div className="flex items-end space-x-2">
+                <div className="flex-1">
+                  <input
+                    ref={inputRef}
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Type your message..."
+                    className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary transition-colors resize-none"
+                  />
+                </div>
+                <button
+                  onClick={handleVoiceInput}
+                  className={`p-2 hover:bg-accent rounded-md transition-colors ${isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : ''}`}
+                >
+                  {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={handleSendMessage}
+                  disabled={!message.trim()}
+                  className="px-3 py-2 primary-gradient text-white rounded-md hover:shadow-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
               </div>
-              <button
-                onClick={handleVoiceInput}
-                className={`p-2 hover:bg-accent rounded-md transition-colors ${isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : ''}`}
-                disabled={!user}
-              >
-                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </button>
-              <button
-                onClick={handleSendMessage}
-                disabled={!message.trim() || !user}
-                className="px-3 py-2 primary-gradient text-white rounded-md hover:shadow-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="w-4 h-4" />
-              </button>
-            </div>
-            {!user && (
+            ) : (
               <p className="text-xs text-muted-foreground mt-2">
-                Sign in for personalized responses and conversation history
+                Sign in to chat and access personalized responses.
               </p>
             )}
           </div>

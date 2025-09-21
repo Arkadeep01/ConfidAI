@@ -6,7 +6,9 @@ import { FloatingChatbot } from "./components/chat/FloatingChatbot";
 import { HomePage } from "./Pages/HomePage";
 import { WellnessPage } from "./Pages/WellnessPage";
 import { Dashboard } from "./Pages/Dashboard";
+import { ProtectedRoute } from "./components/router/ProtectedRoute";
 import { JournalPage } from "./Pages/JournalPage";
+
 
 const App = () => {
   const [user, setUser] = useState<any>(null);
@@ -58,6 +60,7 @@ const App = () => {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-background text-foreground">
+        {/* Top Navigation */}
         <Navigation
           user={user}
           onAuthClick={() => setIsAuthModalOpen(true)}
@@ -68,7 +71,9 @@ const App = () => {
           onShieldToggle={handleShieldToggle}
         />
 
+        {/* Routes */}
         <Routes>
+          {/* ✅ Public Homepage */}
           <Route
             path="/"
             element={
@@ -79,30 +84,82 @@ const App = () => {
               />
             }
           />
-          <Route
-            path="/wellness"
-            element={<WellnessPage isShieldMode={isShieldMode} user={user} />}
-          />
+
+          {/* ✅ Protected Pages */}
           <Route
             path="/dashboard/*"
-            element={<Dashboard user={user} isShieldMode={isShieldMode} />}
+            element={
+              <ProtectedRoute
+                user={user}
+                onAuthRequired={() => setIsAuthModalOpen(true)}
+              >
+                <Dashboard user={user} isShieldMode={isShieldMode} />
+              </ProtectedRoute>
+            }
           />
+
+          <Route
+            path="/wellness"
+            element={
+              <ProtectedRoute
+                user={user}
+                onAuthRequired={() => setIsAuthModalOpen(true)}
+              >
+                <WellnessPage user={user} isShieldMode={isShieldMode} />
+              </ProtectedRoute>
+            }
+          />
+
           <Route
             path="/journal"
-            element={<JournalPage user={user} isShieldMode={isShieldMode} />} // ✅ replaced placeholder
+            element={
+              <ProtectedRoute
+                user={user}
+                onAuthRequired={() => setIsAuthModalOpen(true)}
+              >
+                {/* ✅ Now showing actual JournalPage */}
+                <JournalPage user={user} isShieldMode={isShieldMode} />
+              </ProtectedRoute>
+            }
           />
+
           <Route
             path="/voice"
-            element={<div className="p-8 text-center">Empathy Voice Page Coming Soon</div>}
+            element={
+              <ProtectedRoute
+                user={user}
+                onAuthRequired={() => setIsAuthModalOpen(true)}
+              >
+                <div className="p-8 text-center">
+                  Empathy Voice Page Coming Soon
+                </div>
+              </ProtectedRoute>
+            }
           />
+
           <Route
             path="/notifications"
-            element={<div className="p-8 text-center">Notifications Page Coming Soon</div>}
+            element={
+              <ProtectedRoute
+                user={user}
+                onAuthRequired={() => setIsAuthModalOpen(true)}
+              >
+                <div className="p-8 text-center">
+                  Notifications Page Coming Soon
+                </div>
+              </ProtectedRoute>
+            }
           />
         </Routes>
 
-        <FloatingChatbot user={user} isShieldMode={isShieldMode} />
+        {/* Floating chatbot */}
+        <FloatingChatbot
+          user={user}
+          isShieldMode={isShieldMode}
+          onRequireAuth={() => setIsAuthModalOpen(true)}
+        />
 
+        {/* Authentication Modal */}
         <AuthModal
           isOpen={isAuthModalOpen}
           onClose={() => setIsAuthModalOpen(false)}

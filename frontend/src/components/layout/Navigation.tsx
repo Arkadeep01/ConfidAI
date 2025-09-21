@@ -48,7 +48,7 @@ export const Navigation = ({
     { label: 'Home', path: '/', icon: Home },
     { label: isShieldMode ? 'Tools' : 'Wellness Tools', path: '/wellness', icon: Heart },
     { label: isShieldMode ? 'Notes' : 'Journal', path: '/journal', icon: BookOpen }, // ✅ Journal link
-    // { label: isShieldMode ? 'Audio' : 'Empathy Voice', path: '/voice', icon: Mic },
+    { label: isShieldMode ? 'Audio' : 'Empathy Voice', path: '/voice', icon: Mic },
     { label: 'Notifications', path: '/notifications', icon: Bell },
   ];
 
@@ -77,7 +77,7 @@ export const Navigation = ({
               <Heart className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-semibold primary-gradient bg-clip-text text-transparent">
-              {isShieldMode ? 'ConfidAI(Privacy Mode)' : 'ConfidAI'}
+              {isShieldMode ? 'ConfidAI' : 'ConfidAI'}
             </span>
           </Link>
 
