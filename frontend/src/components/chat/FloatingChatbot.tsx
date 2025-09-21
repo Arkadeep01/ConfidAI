@@ -20,7 +20,7 @@ interface Message {
 }
 
 interface FloatingChatbotProps {
-  user?: any; // If user is undefined or null, treat as guest
+  user?: { id: string }; // expects user object with id
   isShieldMode?: boolean;
 }
 
@@ -41,6 +41,7 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
       timestamp: new Date(),
     }
   ]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -54,8 +55,7 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!user) return; // Gated: guests cannot send messages
-    if (!message.trim()) return;
+    if (!user || !message.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -66,49 +66,47 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
 
     setMessages(prev => [...prev, userMessage]);
     setMessage('');
+    setIsLoading(true);
 
-    // Call your AI / Edge function here instead of simulated response
-    setTimeout(() => {
-      const botResponse: Message = {
+    try {
+      const response = await fetch('/Chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id, message, language: 'en' }),
+      });
+
+      const data = await response.json();
+
+      const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: generateBotResponse(message, isShieldMode),
+        text: data.reply || 'Sorry, I could not process that.',
         sender: 'bot',
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, botResponse]);
-    }, 1000);
-  };
 
-  const generateBotResponse = (userMessage: string, shieldMode?: boolean) => {
-    const lowerMessage = userMessage.toLowerCase();
-
-    if (shieldMode) {
-      if (lowerMessage.includes('task') || lowerMessage.includes('productivity')) {
-        return 'I can help you organize your tasks and improve productivity. Would you like some tips?';
-      }
-      if (lowerMessage.includes('schedule') || lowerMessage.includes('time')) {
-        return 'Time management is crucial. Let me help you plan your schedule.';
-      }
-      return 'I\'m here to help with productivity. What would you like to work on?';
+      setMessages(prev => [...prev, botMessage]);
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setMessages(prev => [
+        ...prev,
+        {
+          id: (Date.now() + 2).toString(),
+          text: 'Oops! Something went wrong. Please try again.',
+          sender: 'bot',
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (lowerMessage.includes('stress') || lowerMessage.includes('anxious')) {
-      return 'I understand you\'re feeling stressed. Shall we try a quick breathing exercise?';
-    }
-    if (lowerMessage.includes('sad') || lowerMessage.includes('down')) {
-      return 'I hear you. Your feelings are valid. Want to explore some mood-lifting strategies?';
-    }
-    if (lowerMessage.includes('sleep') || lowerMessage.includes('tired')) {
-      return 'Sleep is important. I can suggest relaxation techniques or a bedtime routine.';
-    }
-    return 'Thanks for sharing. I\'m here to support you. Shall we explore coping strategies or track your mood?';
   };
 
   const handleVoiceInput = () => {
-    if (!user) return; // Guests cannot use voice input
+    if (!user) return;
     setIsListening(!isListening);
 
     if (!isListening) {
+      // Simulated voice-to-text
       setTimeout(() => {
         setIsListening(false);
         setMessage('This would be voice input text...');
@@ -123,7 +121,7 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
     }
   };
 
-  // Button to open chatbot
+  // Chatbot button
   if (!isOpen) {
     return (
       <button
@@ -173,6 +171,13 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
                   </div>
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] p-3 rounded-2xl bg-muted animate-pulse">
+                    <p className="text-sm">Typing...</p>
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
           </div>
@@ -188,19 +193,19 @@ export const FloatingChatbot = ({ user, isShieldMode }: FloatingChatbotProps) =>
                   onKeyPress={handleKeyPress}
                   placeholder={user ? "Type your message..." : "Sign in to chat..."}
                   className="w-full px-3 py-2 border rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-primary transition-colors resize-none"
-                  disabled={!user} // Disable input for guests
+                  disabled={!user}
                 />
               </div>
               <button
                 onClick={handleVoiceInput}
                 className={`p-2 hover:bg-accent rounded-md transition-colors ${isListening ? 'bg-destructive text-destructive-foreground animate-pulse' : ''}`}
-                disabled={!user} // Disable voice for guests
+                disabled={!user}
               >
                 {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
               </button>
               <button
                 onClick={handleSendMessage}
-                disabled={!message.trim() || !user} // Guests cannot send messages
+                disabled={!message.trim() || !user}
                 className="px-3 py-2 primary-gradient text-white rounded-md hover:shadow-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
