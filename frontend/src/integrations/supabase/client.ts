@@ -3,11 +3,15 @@ import { createClient } from '@supabase/supabase-js';
 import type { Database } from './Types';
 
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder-key';
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
+
+// Check if Supabase is properly configured
+const isSupabaseConfigured = SUPABASE_URL !== 'https://placeholder.supabase.co' && 
+                             SUPABASE_PUBLISHABLE_KEY !== 'placeholder-key';
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
@@ -16,3 +20,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+// Export configuration status for components to check
+export const supabaseConfig = {
+  isConfigured: isSupabaseConfigured,
+  url: SUPABASE_URL,
+  key: SUPABASE_PUBLISHABLE_KEY
+};

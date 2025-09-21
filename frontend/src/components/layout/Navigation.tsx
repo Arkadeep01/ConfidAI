@@ -77,7 +77,7 @@ export const Navigation = ({
               <Heart className="w-5 h-5 text-white" />
             </div>
             <span className="text-xl font-semibold primary-gradient bg-clip-text text-transparent">
-              {isShieldMode ? 'ProductivAI' : 'ConfidAI'}
+              {isShieldMode ? 'ConfidAI(Privacy Mode)' : 'ConfidAI'}
             </span>
           </Link>
 
@@ -237,7 +237,7 @@ export const Navigation = ({
                   <Heart className="w-5 h-5 text-white" />
                 </div>
                 <span className="text-xl font-semibold">
-                  {isShieldMode ? 'ProductivAI' : 'ConfidAI'}
+                  {isShieldMode ? 'ConfidAI(Privacy Mode)' : 'ConfidAI'}
                 </span>
               </div>
               <button
